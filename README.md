@@ -52,7 +52,7 @@ Parameters are improved using a custom genetic algorithm.
 ### 📊 Performance Improvement Summary  
 You can clearly see the improvement after optimization.
 
-![Performance Summary](performance.png)
+![Performance Summary](optimization.png)
 
 ---
 
@@ -107,6 +107,9 @@ The GA improves both the **accuracy** and **stability** of the prediction pipeli
 These improvements are visualized dynamically on the website.
 
 ## 📁 Project Structure
+
+
+```
 
 interface-main/
 └── Interface
