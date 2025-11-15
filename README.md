@@ -21,7 +21,7 @@ Below is a preview of the BugPredictor interface.
 ### 🏠 Home Page  
 A clean introduction to the platform with a welcoming UI.
 
-![Home Page](https://raw.githubusercontent.com/USERNAME/REPO/main/screenshots/home.png)
+![Home Page](screenshots/home.png)
 
 ---
 
