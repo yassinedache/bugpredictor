@@ -206,10 +206,5 @@ It provides:
 - Significant performance improvements through optimization  
 
 🚀 *A practical tool for developers, researchers, and QA engineers.*
-- Clean and intuitive visual feedback  
-- Modular, extensible architecture  
-- Support for real-world datasets  
-- Significant performance improvements through optimization  
 
-🚀 *A practical tool for developers, researchers, and QA engineers.*
 
