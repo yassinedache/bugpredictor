@@ -28,15 +28,16 @@ A clean introduction to the platform with a welcoming UI.
 ### 📤 Dataset Upload  
 Drag & drop your CSV or ARFF file to begin the analysis.
 
-![Upload Page](https://raw.githubusercontent.com/USERNAME/REPO/main/screenshots/upload.png)
+![Upload Page](screenshots/upload.png)
+![Upload Page](screenshots/uploaded.png)
+
 
 ---
 
 ### ⚙️ Processing Pipeline  
 The system processes the dataset, trains the model, and optimizes parameters step by step.
 
-![Processing Step](https://raw.githubusercontent.com/USERNAME/REPO/main/screenshots/processing.png)
-![Processing Step](https://raw.githubusercontent.com/USERNAME/REPO/main/screenshots/processing.png)
+![Processing Step](screenshots/processing.png)
 
 
 ---
@@ -44,20 +45,20 @@ The system processes the dataset, trains the model, and optimizes parameters ste
 ### 🧬 Genetic Algorithm Optimization  
 Parameters are improved using a custom genetic algorithm.
 
-![Optimization Step](https://raw.githubusercontent.com/USERNAME/REPO/main/screenshots/optimization.png)
+![Optimization Step](screenshots/optimizating.png)
 
 ---
 
 ### 📊 Performance Improvement Summary  
 You can clearly see the improvement after optimization.
 
-![Performance Summary](https://raw.githubusercontent.com/USERNAME/REPO/main/screenshots/performance.png)
+![Performance Summary](performance.png)
 
 ---
 
 ### ⚖️ Model Comparison (Default vs Optimized)
 
-![Model Comparison](https://raw.githubusercontent.com/USERNAME/REPO/main/screenshots/comparison.png)
+![Model Comparison](screenshots/comparison.png)
 
 ---
 
