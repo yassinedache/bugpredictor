@@ -1,0 +1,462 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background-color: #e0e8ff;
+    padding: 16px 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    color: #1a73e8;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.logo-icon {
+    margin-right: 8px;
+    color: #1a73e8;
+}
+
+.content {
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    color: #1a73e8;
+    font-size: 14px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.back-button svg {
+    margin-right: 4px;
+}
+
+.upload-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+}
+
+.upload-container.hidden {
+    display: none;
+}
+
+.upload-header {
+    padding: 20px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.upload-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1f2937;
+}
+
+.upload-subtitle {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.upload-area-container {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.upload-area {
+    width: 100%;
+    max-width: 600px;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.upload-area.highlight {
+    border-color: #1a73e8;
+    background-color: rgba(26, 115, 232, 0.05);
+}
+
+.file-input {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.file-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+}
+
+.upload-icon {
+    margin-bottom: 16px;
+}
+
+.upload-text {
+    font-size: 16px;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.upload-format {
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+/* Uploading state styles */
+.uploading-state {
+    width: 100%;
+    max-width: 600px;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #eff6ff;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.uploading-state.hidden {
+    display: none;
+}
+
+.spinner {
+    border: 3px solid rgba(26, 115, 232, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #1a73e8;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.uploading-text {
+    font-size: 16px;
+    color: #1f2937;
+}
+
+/* File info styles - updated to match the green box in images */
+.file-info {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background-color: #e8f5e9;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.file-info.hidden {
+    display: none;
+}
+
+.file-icon {
+    margin-right: 16px;
+    color: #4caf50;
+}
+
+.file-details {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.file-size {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.file-status {
+    display: flex;
+    align-items: center;
+    color: #2e7d32;
+    margin-right: 16px;
+    font-size: 14px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #2e7d32;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.remove-file {
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-file:hover {
+    color: #ef4444;
+}
+
+/* Button styles - updated to "Start Analysis" */
+.prediction-button {
+    background-color: #1a73e8;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+.prediction-button:hover:not(.disabled) {
+    background-color: #1557b0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 115, 232, 0.4);
+}
+
+.prediction-button.disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.7;
+}
+
+.recommendation-box {
+    background-color: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    padding: 20px;
+}
+
+.recommendation-text {
+    color: #6b7280;
+    font-size: 14px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Analysis Container Styles */
+.analysis-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    padding: 30px;
+}
+
+.analysis-container.hidden {
+    display: none;
+}
+
+.file-info-box {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 40px;
+    padding: 16px;
+    background-color: #e8f5e9;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* Progress Tracker Styles */
+.progress-tracker {
+    width: 100%;
+    margin: 40px 0;
+}
+
+.progress-bar {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.progress-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 4px;
+    width: 100%;
+    background-color: #e0e0e0;
+    z-index: 1;
+}
+
+.progress-fill {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 4px;
+    background-color: #1a73e8;
+    z-index: 2;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+.step {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 3;
+    color: #9e9e9e;
+}
+
+.step.active {
+    border-color: #1a73e8;
+    background-color: #1a73e8;
+    color: white;
+}
+
+.step.completed {
+    border-color: #1a73e8;
+    background-color: #1a73e8;
+    color: white;
+}
+
+.step-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.step-label {
+    width: 80px;
+    text-align: center;
+    font-size: 12px;
+    color: #757575;
+    margin: 0 -20px;
+}
+
+.step-label.active {
+    color: #1a73e8;
+    font-weight: 500;
+}
+
+.analysis-status {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.analysis-message {
+    font-size: 16px;
+    color: #424242;
+    margin-bottom: 8px;
+}
+
+.analysis-progress {
+    font-size: 14px;
+    color: #757575;
+}
+
+@media (max-width: 768px) {
+    .upload-area, .uploading-state {
+        padding: 30px 15px;
+    }
+    
+    .upload-title {
+        font-size: 18px;
+    }
+    
+    .upload-area-container {
+        padding: 20px;
+    }
+    
+    .step {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .step svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .step-label {
+        font-size: 10px;
+        width: 60px;
+        margin: 0 -15px;
+    }
+    
+    .analysis-container {
+        padding: 20px;
+    }
+}

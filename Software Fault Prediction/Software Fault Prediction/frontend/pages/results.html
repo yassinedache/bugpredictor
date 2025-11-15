@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugPredictor - Prediction Results</title>
+    <link rel="stylesheet" href="../styles/results-styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <object class="logo-icon" data="Vector.svg" type="image/svg+xml" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></object>
+                BugPredictor
+            </div>
+        </header>
+
+        <main class="content">
+            <a href="upload.html">
+                <div class="back-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Back</span>
+                </div>
+            </a>
+
+            <h1 class="results-title">Prediction Results</h1>
+            <p class="results-subtitle">Comparison between the default model and our optimized model for bug prediction</p>
+
+            <div class="models-comparison">
+                <div class="model-card default-model">
+                    <h2 class="model-title">Default Model</h2>
+                    <p class="model-description">Standard machine learning approach</p>
+                    
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-label">Precision</div>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" style="width: 70%"></div>
+                            </div>
+                            <div class="metric-value">70%</div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">Recall</div>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" style="width: 70%"></div>
+                            </div>
+                            <div class="metric-value">70%</div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">F1-Score</div>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" style="width: 70%"></div>
+                            </div>
+                            <div class="metric-value">70%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="model-card optimized-model">
+                    <div class="model-header">
+                        <h2 class="model-title">Optimized Model</h2>
+                        <span class="recommended-badge">Recommended</span>
+                    </div>
+                    <p class="model-description">Our enhanced prediction algorithm</p>
+                    
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-label">Precision</div>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" style="width: 80%"></div>
+                            </div>
+                            <div class="metric-value">80%</div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">Recall</div>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" style="width: 80%"></div>
+                            </div>
+                            <div class="metric-value">80%</div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">F1-Score</div>
+                            <div class="metric-bar-container">
+                                <div class="metric-bar" style="width: 80%"></div>
+                            </div>
+                            <div class="metric-value">80%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="prediction-details">
+                <h2 class="section-title">Prediction Details</h2>
+                <p class="section-subtitle">Sample of individual predictions from both models</p>
+
+                <div class="table-container">
+                    <table class="predictions-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Actual Bug</th>
+                                <th>Default Model</th>
+                                <th>Optimized Model</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlighted-row">
+                                <td>0</td>
+                                <td>Yes</td>
+                                <td>No</td>
+                                <td>No</td>
+                            </tr>
+                            <tr class="highlighted-row">
+                                <td>1</td>
+                                <td>Yes</td>
+                                <td>No</td>
+                                <td>No</td>
+                            </tr>
+                            <tr class="highlighted-row">
+                                <td>2</td>
+                                <td>No</td>
+                                <td>Yes</td>
+                                <td>Yes</td>
+                            </tr>
+                            <tr class="highlighted-row">
+                                <td>3</td>
+                                <td>No</td>
+                                <td>Yes</td>
+                                <td>Yes</td>
+                            </tr>
+                            <tr class="highlighted-row">
+                                <td>4</td>
+                                <td>Yes</td>
+                                <td>Yes</td>
+                                <td>Yes</td>
+                            </tr>
+                            <tr class="highlighted-row">
+                                <td>5</td>
+                                <td>No</td>
+                                <td>Yes</td>
+                                <td>Yes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <a href="#" class="see-more-link">See More...</a>
+
+                <div class="actions">
+                    <button class="print-button">Print Results</button>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

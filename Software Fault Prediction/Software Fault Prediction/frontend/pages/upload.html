@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugPredictor - Upload Dataset</title>
+    <link rel="stylesheet" href="../styles/upload-styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <object class="logo-icon" data="Vector.svg" type="image/svg+xml" width="24" height="24"></object>      
+                BugPredictor
+            </div>
+        </div>
+    </header>
+
+    <main class="content">
+        <a href="homepage.html" class="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back</span>
+        </a>
+        
+        <!-- Upload Container -->
+        <div id="upload-container" class="upload-container">
+            <div class="upload-header">
+                <h1 class="upload-title">Upload Your Dataset</h1>
+                <p class="upload-subtitle">Upload your software dataset in CSV or ARFF format to start the bug prediction process</p>
+            </div>
+
+            <div class="upload-area-container">
+                <div class="upload-area" id="drop-area">
+                    <input type="file" id="file-upload" class="file-input" accept=".csv,.arff">
+                    <label for="file-upload" class="file-label">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <p class="upload-text">Click to upload or drag and drop</p>
+                        <p class="upload-format">CSV and ARFF files only</p>
+                    </label>
+                </div>
+
+                <!-- Uploading state -->
+                <div id="uploading-state" class="uploading-state hidden">
+                    <div class="spinner"></div>
+                    <p class="uploading-text">Uploading file...</p>
+                </div>
+
+                <!-- File info display -->
+                <div id="file-info" class="file-info hidden">
+                    <div class="file-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                    </div>
+                    <div class="file-details">
+                        <div class="file-name" id="file-name">int1.3.CSV</div>
+                        <div class="file-size" id="file-size">94 KB of 94 KB</div>
+                    </div>
+                    <div class="file-status">
+                        <span class="status-dot"></span>
+                        <span>Completed</span>
+                    </div>
+                    <button id="remove-file" class="remove-file">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Start Analysis button -->
+                <button id="analysis-button" class="prediction-button disabled" disabled>Start Analysis</button>
+            </div>
+
+            <div class="recommendation-box">
+                <p class="recommendation-text">
+                    Recommended dataset format: CSV or ARFF with columns for code metrics (complexity, lines of code, etc.) and a target column indicating bugs
+                </p>
+            </div>
+        </div>
+        
+        <!-- Analysis Container -->
+        <div id="analysis-container" class="analysis-container hidden">
+            <div class="file-info-box">
+                <div class="file-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                </div>
+                <div class="file-details">
+                    <div class="file-name" id="analysis-file-name">int1.3.CSV</div>
+                    <div class="file-size" id="analysis-file-size">94 KB of 94 KB</div>
+                </div>
+                <div class="file-status">
+                    <span class="status-dot"></span>
+                    <span>Completed</span>
+                </div>
+                <button id="delete-file" class="remove-file">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="progress-tracker">
+                <div class="progress-bar">
+                    <div class="progress-line"></div>
+                    <div class="progress-fill" id="progress-fill"></div>
+                    
+                    <div class="step active completed" id="step-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        </svg>
+                    </div>
+                    
+                    <div class="step" id="step-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                    </div>
+                    
+                    <div class="step" id="step-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    
+                    <div class="step" id="step-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="step-labels">
+                    <div class="step-label active">Processing Dataset</div>
+                    <div class="step-label">Training the Model</div>
+                    <div class="step-label">Optimizing Parameters</div>
+                    <div class="step-label">Analysis Complete</div>
+                </div>
+            </div>
+            
+            <div class="analysis-status">
+                <p id="analysis-message" class="analysis-message">Training model with random parameters</p>
+                <p id="analysis-progress" class="analysis-progress">20% complete</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Upload elements
+            const uploadContainer = document.getElementById('upload-container');
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-upload');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const fileSize = document.getElementById('file-size');
+            const removeFile = document.getElementById('remove-file');
+            const analysisButton = document.getElementById('analysis-button');
+            const uploadingState = document.getElementById('uploading-state');
+            
+            // Analysis elements
+            const analysisContainer = document.getElementById('analysis-container');
+            const analysisFileName = document.getElementById('analysis-file-name');
+            const analysisFileSize = document.getElementById('analysis-file-size');
+            const deleteFile = document.getElementById('delete-file');
+            const progressFill = document.getElementById('progress-fill');
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+            const step4 = document.getElementById('step-4');
+            const analysisMessage = document.getElementById('analysis-message');
+            const analysisProgress = document.getElementById('analysis-progress');
+            
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Highlight drop area when item is dragged over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            // Handle dropped files
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            // Handle selected files
+            fileInput.addEventListener('change', handleFiles, false);
+            
+            // Handle remove file button
+            removeFile.addEventListener('click', clearFile, false);
+            deleteFile.addEventListener('click', clearFile, false);
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight() {
+                dropArea.classList.add('highlight');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('highlight');
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles({ target: { files: files } });
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                else if (bytes < 1048576) return (bytes / 1024).toFixed(0) + ' KB';
+                else return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+            
+            function handleFiles(e) {
+                const files = e.target.files;
+                if (files.length) {
+                    const file = files[0];
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                    
+                    if (fileExtension === 'csv' || fileExtension === 'arff') {
+                        // Show uploading state
+                        dropArea.style.display = 'none';
+                        uploadingState.classList.remove('hidden');
+                        
+                        // Simulate file upload (replace with actual upload logic)
+                        setTimeout(() => {
+                            // Hide uploading state
+                            uploadingState.classList.add('hidden');
+                            
+                            // Show file info
+                            const sizeText = formatFileSize(file.size);
+                            fileName.textContent = file.name;
+                            fileSize.textContent = sizeText + ' of ' + sizeText;
+                            fileInfo.classList.remove('hidden');
+                            
+                            // Update analysis file info
+                            analysisFileName.textContent = file.name;
+                            analysisFileSize.textContent = sizeText + ' of ' + sizeText;
+                            
+                            // Enable analysis button
+                            analysisButton.classList.remove('disabled');
+                            analysisButton.disabled = false;
+                        }, 1500);
+                    } else {
+                        alert('Please upload a CSV or ARFF file only.');
+                        clearFile();
+                    }
+                }
+            }
+            
+            function clearFile() {
+                fileInput.value = '';
+                fileInfo.classList.add('hidden');
+                uploadingState.classList.add('hidden');
+                dropArea.style.display = 'block';
+                analysisButton.classList.add('disabled');
+                analysisButton.disabled = true;
+                
+                // Reset analysis view
+                uploadContainer.classList.remove('hidden');
+                analysisContainer.classList.add('hidden');
+                resetAnalysisProgress();
+            }
+            
+            function resetAnalysisProgress() {
+                progressFill.style.width = '0%';
+                
+                // Reset steps
+                step1.classList.remove('active', 'completed');
+                step2.classList.remove('active', 'completed');
+                step3.classList.remove('active', 'completed');
+                step4.classList.remove('active', 'completed');
+                
+                // Reset step labels
+                document.querySelectorAll('.step-label').forEach(label => {
+                    label.classList.remove('active');
+                });
+                document.querySelector('.step-label:first-child').classList.add('active');
+                
+                // Reset step 1
+                step1.classList.add('active');
+            }
+            
+            // Handle analysis button click
+            analysisButton.addEventListener('click', function() {
+                if (!analysisButton.disabled) {
+                    // Hide upload container and show analysis container
+                    uploadContainer.classList.add('hidden');
+                    analysisContainer.classList.remove('hidden');
+                    
+                    // Start the analysis process
+                    startAnalysis();
+                }
+            });
+            
+            function startAnalysis() {
+                // Reset progress
+                resetAnalysisProgress();
+                
+                // Step 1: Processing Dataset (already active)
+                progressFill.style.width = '0%';
+                analysisMessage.textContent = 'Processing dataset...';
+                analysisProgress.textContent = '0% complete';
+                
+                setTimeout(() => {
+                    // Complete step 1
+                    step1.classList.add('completed');
+                    
+                    // Start step 2
+                    progressFill.style.width = '33%';
+                    step2.classList.add('active');
+                    document.querySelectorAll('.step-label').forEach((label, index) => {
+                        label.classList.remove('active');
+                        if (index === 1) label.classList.add('active');
+                    });
+                    analysisMessage.textContent = 'Training model with random parameters';
+                    analysisProgress.textContent = '20% complete';
+                    
+                    setTimeout(() => {
+                        // Complete step 2
+                        step2.classList.add('completed');
+                        
+                        // Start step 3
+                        progressFill.style.width = '66%';
+                        step3.classList.add('active');
+                        document.querySelectorAll('.step-label').forEach((label, index) => {
+                            label.classList.remove('active');
+                            if (index === 2) label.classList.add('active');
+                        });
+                        analysisMessage.textContent = 'Optimizing parameters using Genetic Algorithm';
+                        analysisProgress.textContent = '50% complete';
+                        
+                        setTimeout(() => {
+                            // Update progress in step 3
+                            analysisProgress.textContent = '70% complete';
+                            
+                            setTimeout(() => {
+                                // Complete step 3
+                                step3.classList.add('completed');
+                                
+                                // Start step 4
+                                progressFill.style.width = '100%';
+                                step4.classList.add('active', 'completed');
+                                document.querySelectorAll('.step-label').forEach((label, index) => {
+                                    label.classList.remove('active');
+                                    if (index === 3) label.classList.add('active');
+                                });
+                                analysisMessage.textContent = 'Analysis complete! Results are ready to review.';
+                                analysisProgress.textContent = 'Complete.';
+                                
+                                // Redirect to results page after a delay
+                                setTimeout(() => {
+                                    window.location.href = 'results2.html';
+                                }, 2000);
+                            }, 1500);
+                        }, 1500);
+                    }, 2000);
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugPredictor - Predict Software Defects</title>
+    <link rel="stylesheet" href="../styles/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="landing-card">
+            <header class="header">
+                <div class="logo">
+                    <object class="logo-icon" data="../assets/Vector.svg" type="image/svg+xml" width="24" height="24"></object>
+                    <span>BugPredictor</span>
+                </div>
+            </header>
+            
+            <div class="main-content">
+                <div class="left-section">
+                    <h1>Welcome to BugPredictor</h1>
+                    <p class="description">
+                        A website dedicated to predicting software defects with machine learning, helping development teams ship cleaner, faster, and smarter code
+                    </p>
+                    <p class="tagline">Predict the problem before it becomes a problem</p>
+                    
+                    <a href="upload.html">
+                        <button class="cta-button" onclick="scrollToSection('section1', 'upload.html')">Start Here →</button>
+                    </a>
+                    
+                    <div class="features">
+                        <div class="feature">
+                            <object class="feature-icon" data="../assets/ML-powered.svg" type="image/svg+xml" width="20" height="20"></object>
+                            ML-Powered
+                        </div>
+                        <div class="feature">
+                            <object class="feature-icon" data="..//assets/bug.svg" type="image/svg+xml" width="20" height="20"></object>
+                            Bug-Prediction
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="right-section">
+                    <img src="../assets/SDP.png" alt="Software Defect Prediction" class="hero-image">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function scrollToSection(sectionId, pageUrl) {
+          const section = document.getElementById(sectionId);
+          // Only load content if not already loaded
+          if (!section.dataset.loaded) {
+            fetch(pageUrl)
+              .then(res => res.text())
+              .then(html => {
+                section.innerHTML += html;
+                section.dataset.loaded = 'true';
+                section.scrollIntoView({ behavior: 'smooth' });
+              });
+          } else {
+            section.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      </script>
+</body>
+</html>

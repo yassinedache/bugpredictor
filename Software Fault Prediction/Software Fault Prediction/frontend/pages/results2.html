@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugPredictor - Prediction Results</title>
+    <link rel="stylesheet" href="../styles/results-styles2.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+                BugPredictor
+            </div>
+        </header>
+
+        <main class="content">
+            <a href="upload.html" class="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Back</span>
+            </a>
+
+            <h1 class="results-title">Prediction Results</h1>
+            <p class="results-subtitle">Comparison between the default model and our optimized model for bug prediction</p>
+
+            <!-- Dataset Selector -->
+            <div class="dataset-selector">
+                <h3 class="dataset-title">Select Dataset</h3>
+                <div class="dataset-buttons">
+                    <button class="dataset-button active" data-dataset="ant-1.3">ant-1.3</button>
+                    <button class="dataset-button" data-dataset="camel-1.0">camel-1.0</button>
+                    <button class="dataset-button" data-dataset="ivy-1.1">ivy-1.1</button>
+                </div>
+            </div>
+
+            <div class="models-comparison">
+                <div class="model-card default-model">
+                    <h2 class="model-title">Default Model</h2>
+                    <p class="model-description">Standard machine learning approach</p>
+                    
+                    <div class="performance-matrix">
+                        <h3 class="matrix-title">Performance Matrix</h3>
+                        <div class="chart-container">
+                            <div class="chart-y-axis">
+                                <div class="y-label">1.0</div>
+                                <div class="y-label">0.9</div>
+                                <div class="y-label">0.8</div>
+                                <div class="y-label">0.7</div>
+                                <div class="y-label">0.6</div>
+                                <div class="y-label">0.5</div>
+                                <div class="y-label">0.4</div>
+                                <div class="y-label">0.3</div>
+                                <div class="y-label">0.2</div>
+                                <div class="y-label">0.1</div>
+                                <div class="y-label">0.0</div>
+                            </div>
+                            <div class="chart-bars">
+                                <div class="chart-metric">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar default-bar" style="height: 60%" data-metric="F1-Score" data-value="0.60">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">F1-Score</span>
+                                                <span class="tooltip-value">Random parameters: 0.60</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-label">F1-Score</div>
+                                </div>
+                                <div class="chart-metric">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar default-bar" style="height: 55%" data-metric="Precision" data-value="0.55">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">Precision</span>
+                                                <span class="tooltip-value">Random parameters: 0.55</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-label">Precision</div>
+                                </div>
+                                <div class="chart-metric">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar default-bar" style="height: 58%" data-metric="Recall" data-value="0.58">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">Recall</span>
+                                                <span class="tooltip-value">Random parameters: 0.58</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-label">Recall</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="model-parameters">
+                        <h3 class="parameters-title">Model Parameters</h3>
+                        <div class="parameters-grid">
+                            <div class="parameter">
+                                <div class="parameter-name">C (Regularisation)</div>
+                                <div class="parameter-value">1</div>
+                            </div>
+                            <div class="parameter">
+                                <div class="parameter-name">Gamma</div>
+                                <div class="parameter-value">Scale</div>
+                            </div>
+                            <div class="parameter">
+                                <div class="parameter-name">Kernel</div>
+                                <div class="parameter-value">rbf</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box default-info">
+                        <div class="info-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        </div>
+                        <p class="info-text">
+                            These results serve as a baseline for comparison with the optimized model. 
+                            Random parameters often perform adequately but can be significantly improved 
+                            through optimization techniques.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="model-card optimized-model">
+                    <div class="model-header">
+                        <h2 class="model-title">Optimized Model</h2>
+                        <span class="recommended-badge">Recommended</span>
+                    </div>
+                    <p class="model-description">Our enhanced prediction algorithm</p>
+                    
+                    <div class="performance-matrix">
+                        <h3 class="matrix-title">Performance Matrix</h3>
+                        <div class="chart-container">
+                            <div class="chart-y-axis">
+                                <div class="y-label">1.0</div>
+                                <div class="y-label">0.9</div>
+                                <div class="y-label">0.8</div>
+                                <div class="y-label">0.7</div>
+                                <div class="y-label">0.6</div>
+                                <div class="y-label">0.5</div>
+                                <div class="y-label">0.4</div>
+                                <div class="y-label">0.3</div>
+                                <div class="y-label">0.2</div>
+                                <div class="y-label">0.1</div>
+                                <div class="y-label">0.0</div>
+                            </div>
+                            <div class="chart-bars">
+                                <div class="chart-metric">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar optimized-bar" style="height: 75%" data-metric="F1-Score" data-value="0.75">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">F1-Score</span>
+                                                <span class="tooltip-value">Optimized parameters: 0.75</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-label">F1-Score</div>
+                                </div>
+                                <div class="chart-metric">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar optimized-bar" style="height: 80%" data-metric="Precision" data-value="0.80">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">Precision</span>
+                                                <span class="tooltip-value">Optimized parameters: 0.80</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-label">Precision</div>
+                                </div>
+                                <div class="chart-metric">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar optimized-bar" style="height: 75%" data-metric="Recall" data-value="0.75">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">Recall</span>
+                                                <span class="tooltip-value">Optimized parameters: 0.75</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-label">Recall</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="model-parameters">
+                        <h3 class="parameters-title">Model Parameters</h3>
+                        <div class="parameters-grid">
+                            <div class="parameter">
+                                <div class="parameter-name">C (Regularisation)</div>
+                                <div class="parameter-value">0.9</div>
+                            </div>
+                            <div class="parameter">
+                                <div class="parameter-name">Gamma</div>
+                                <div class="parameter-value">0.01</div>
+                            </div>
+                            <div class="parameter">
+                                <div class="parameter-name">Kernel</div>
+                                <div class="parameter-value">rbf</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box optimized-info">
+                        <div class="info-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <p class="info-text">
+                            The Genetic Algorithm search found these optimal parameters after evaluating 
+                            multiple generations of parameter combinations. These settings maximize 
+                            model performance across the selected metrics.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <section class="performance-improvement">
+                <h2 class="section-title">Performance Improvement Summary</h2>
+                <p class="section-subtitle">Comparing random parameters with optimized parameters performance</p>
+                
+                <div class="comparison-chart">
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color default-legend"></div>
+                            <div class="legend-label">Random Parameters</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color optimized-legend"></div>
+                            <div class="legend-label">Optimized Parameters</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container comparison-container">
+                        <div class="chart-y-axis">
+                            <div class="y-label">1.0</div>
+                            <div class="y-label">0.9</div>
+                            <div class="y-label">0.8</div>
+                            <div class="y-label">0.7</div>
+                            <div class="y-label">0.6</div>
+                            <div class="y-label">0.5</div>
+                            <div class="y-label">0.4</div>
+                            <div class="y-label">0.3</div>
+                            <div class="y-label">0.2</div>
+                            <div class="y-label">0.1</div>
+                            <div class="y-label">0.0</div>
+                        </div>
+                        <div class="chart-bars comparison-bars">
+                            <div class="chart-metric-group">
+                                <div class="chart-bar-group">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar optimized-bar" style="height: 85%" data-metric="F1-Score" data-value="0.85">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">F1-Score</span>
+                                                <span class="tooltip-value">Optimized parameters: 0.85</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar default-bar" style="height: 70%" data-metric="F1-Score" data-value="0.70">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">F1-Score</span>
+                                                <span class="tooltip-value">Random parameters: 0.70</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart-label">F1-Score</div>
+                            </div>
+                            <div class="chart-metric-group">
+                                <div class="chart-bar-group">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar optimized-bar" style="height: 85%" data-metric="Precision" data-value="0.85">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">Precision</span>
+                                                <span class="tooltip-value">Optimized parameters: 0.85</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar default-bar" style="height: 70%" data-metric="Precision" data-value="0.70">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">Precision</span>
+                                                <span class="tooltip-value">Random parameters: 0.70</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart-label">Precision</div>
+                            </div>
+                            <div class="chart-metric-group">
+                                <div class="chart-bar-group">
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar optimized-bar" style="height: 85%" data-metric="Recall" data-value="0.85">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">Recall</span>
+                                                <span class="tooltip-value">Optimized parameters: 0.85</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-bar-container">
+                                        <div class="chart-bar default-bar" style="height: 70%" data-metric="Recall" data-value="0.70">
+                                            <div class="tooltip">
+                                                <span class="tooltip-title">Recall</span>
+                                                <span class="tooltip-value">Random parameters: 0.70</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart-label">Recall</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detailed-improvements">
+                    <h3 class="improvements-title">Detailed improvements</h3>
+                    <div class="improvements-grid">
+                        <div class="improvement">
+                            <div class="improvement-metric">F1-Score</div>
+                            <div class="improvement-value">+17.0%</div>
+                        </div>
+                        <div class="improvement">
+                            <div class="improvement-metric">Precision</div>
+                            <div class="improvement-value">+17.0%</div>
+                        </div>
+                        <div class="improvement">
+                            <div class="improvement-metric">Recall</div>
+                            <div class="improvement-value">+17.0%</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button class="print-button">Print Results</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const printButton = document.querySelector('.print-button');
+            const chartBars = document.querySelectorAll('.chart-bar');
+            const datasetButtons = document.querySelectorAll('.dataset-button');
+            
+            // Données pour chaque dataset
+            const datasetValues = {
+                'ant-1.3': {
+                    default: {
+                        'F1-Score': 0.60,
+                        'Precision': 0.55,
+                        'Recall': 0.58
+                    },
+                    optimized: {
+                        'F1-Score': 0.81,
+                        'Precision': 0.82,
+                        'Recall': 0.80
+                    },
+                    comparison: {
+                        default: {
+                            'F1-Score': 0.60,
+                            'Precision': 0.55,
+                            'Recall': 0.58
+                        },
+                        optimized: {
+                            'F1-Score': 0.81,
+                            'Precision': 0.82,
+                            'Recall': 0.80
+                        }
+                    },
+                    improvements: {
+                        'F1-Score': '+35.0%',
+                        'Precision': '+49.1%',
+                        'Recall': '+37.9%'
+                    },
+                    parameters: {
+                        default: {
+                            'C (Regularisation)': '1',
+                            'Gamma': 'Scale',
+                            'Kernel': 'rbf'
+                        },
+                        optimized: {
+                            'C (Regularisation)': '0.9',
+                            'Gamma': '0.01',
+                            'Kernel': 'rbf'
+                        }
+                    }
+                },
+                'camel-1.0': {
+                    default: {
+                        'F1-Score': 0.54,
+                        'Precision': 0.52,
+                        'Recall': 0.61
+                    },
+                    optimized: {
+                        'F1-Score': 0.93,
+                        'Precision': 0.91,
+                        'Recall': 0.96
+                    },
+                    comparison: {
+                        default: {
+                            'F1-Score': 0.54,
+                            'Precision': 0.52,
+                            'Recall': 0.61
+                        },
+                        optimized: {
+                            'F1-Score': 0.93,
+                            'Precision': 0.91,
+                            'Recall': 0.96
+                        }
+                    },
+                    improvements: {
+                        'F1-Score': '+72.2%',
+                        'Precision': '+75.0%',
+                        'Recall': '+57.4%'
+                    },
+                    parameters: {
+                        default: {
+                            'C (Regularisation)': '1',
+                            'Gamma': 'Scale',
+                            'Kernel': 'rbf'
+                        },
+                        optimized: {
+                            'C (Regularisation)': '1.2',
+                            'Gamma': '0.02',
+                            'Kernel': 'rbf'
+                        }
+                    }
+                },
+                'ivy-1.1': {
+                    default: {
+                        'F1-Score': 0.53,
+                        'Precision': 0.56,
+                        'Recall': 0.51
+                    },
+                    optimized: {
+                        'F1-Score': 0.61,
+                        'Precision': 0.62,
+                        'Recall': 0.61
+                    },
+                    comparison: {
+                        default: {
+                            'F1-Score': 0.53,
+                            'Precision': 0.56,
+                            'Recall': 0.51
+                        },
+                        optimized: {
+                            'F1-Score': 0.61,
+                            'Precision': 0.62,
+                            'Recall': 0.61
+                        }
+                    },
+                    improvements: {
+                        'F1-Score': '+15.1%',
+                        'Precision': '+10.7%',
+                        'Recall': '+19.6%'
+                    },
+                    parameters: {
+                        default: {
+                            'C (Regularisation)': '1',
+                            'Gamma': 'Scale',
+                            'Kernel': 'rbf'
+                        },
+                        optimized: {
+                            'C (Regularisation)': '0.8',
+                            'Gamma': '0.015',
+                            'Kernel': 'rbf'
+                        }
+                    }
+                }
+            };
+            
+            // Fonction pour mettre à jour les graphiques et valeurs
+            function updateCharts(dataset) {
+                // Mise à jour des barres du modèle par défaut
+                const defaultModel = document.querySelector('.default-model');
+                Object.keys(datasetValues[dataset].default).forEach(metric => {
+                    const value = datasetValues[dataset].default[metric];
+                    const bar = defaultModel.querySelector(`.chart-bar[data-metric="${metric}"]`);
+                    bar.style.height = `${value * 100}%`;
+                    bar.setAttribute('data-value', value.toFixed(2));
+                    
+                    // Mise à jour du tooltip
+                    const tooltip = bar.querySelector('.tooltip-value');
+                    tooltip.textContent = `Random parameters: ${value.toFixed(2)}`;
+                });
+                
+                // Mise à jour des barres du modèle optimisé
+                const optimizedModel = document.querySelector('.optimized-model');
+                Object.keys(datasetValues[dataset].optimized).forEach(metric => {
+                    const value = datasetValues[dataset].optimized[metric];
+                    const bar = optimizedModel.querySelector(`.chart-bar[data-metric="${metric}"]`);
+                    bar.style.height = `${value * 100}%`;
+                    bar.setAttribute('data-value', value.toFixed(2));
+                    
+                    // Mise à jour du tooltip
+                    const tooltip = bar.querySelector('.tooltip-value');
+                    tooltip.textContent = `Optimized parameters: ${value.toFixed(2)}`;
+                });
+                
+                // Mise à jour des barres de comparaison
+                const comparison = document.querySelector('.comparison-chart');
+                
+                // Pour le modèle par défaut dans la comparaison
+                Object.keys(datasetValues[dataset].comparison.default).forEach(metric => {
+                    const value = datasetValues[dataset].comparison.default[metric];
+                    const metricGroup = comparison.querySelector(`.chart-metric-group:has(.chart-label:contains("${metric}"))`);
+                    if (metricGroup) {
+                        const defaultBar = metricGroup.querySelector('.chart-bar.default-bar');
+                        defaultBar.style.height = `${value * 100}%`;
+                        defaultBar.setAttribute('data-value', value.toFixed(2));
+                        
+                        // Mise à jour du tooltip
+                        const tooltip = defaultBar.querySelector('.tooltip-value');
+                        tooltip.textContent = `Random parameters: ${value.toFixed(2)}`;
+                    }
+                });
+                
+                // Pour le modèle optimisé dans la comparaison
+                Object.keys(datasetValues[dataset].comparison.optimized).forEach(metric => {
+                    const value = datasetValues[dataset].comparison.optimized[metric];
+                    const metricGroup = Array.from(comparison.querySelectorAll('.chart-metric-group')).find(group => {
+                        return group.querySelector('.chart-label').textContent.includes(metric);
+                    });
+                    if (metricGroup) {
+                        const optimizedBar = metricGroup.querySelector('.chart-bar.optimized-bar');
+                        optimizedBar.style.height = `${value * 100}%`;
+                        optimizedBar.setAttribute('data-value', value.toFixed(2));
+                        
+                        // Mise à jour du tooltip
+                        const tooltip = optimizedBar.querySelector('.tooltip-value');
+                        tooltip.textContent = `Optimized parameters: ${value.toFixed(2)}`;
+                    }
+                });
+                
+                // Mise à jour des valeurs d'amélioration
+                const improvements = document.querySelector('.detailed-improvements');
+                Object.keys(datasetValues[dataset].improvements).forEach(metric => {
+                    const value = datasetValues[dataset].improvements[metric];
+                    const improvementElement = Array.from(improvements.querySelectorAll('.improvement')).find(imp => {
+                        return imp.querySelector('.improvement-metric').textContent.includes(metric);
+                    });
+                    if (improvementElement) {
+                        improvementElement.querySelector('.improvement-value').textContent = value;
+                    }
+                });
+                
+                // Mise à jour des paramètres du modèle par défaut
+                const defaultParameters = defaultModel.querySelector('.parameters-grid');
+                Object.keys(datasetValues[dataset].parameters.default).forEach(paramName => {
+                    const value = datasetValues[dataset].parameters.default[paramName];
+                    const paramElement = Array.from(defaultParameters.querySelectorAll('.parameter')).find(param => {
+                        return param.querySelector('.parameter-name').textContent.includes(paramName);
+                    });
+                    if (paramElement) {
+                        paramElement.querySelector('.parameter-value').textContent = value;
+                    }
+                });
+                
+                // Mise à jour des paramètres du modèle optimisé
+                const optimizedParameters = optimizedModel.querySelector('.parameters-grid');
+                Object.keys(datasetValues[dataset].parameters.optimized).forEach(paramName => {
+                    const value = datasetValues[dataset].parameters.optimized[paramName];
+                    const paramElement = Array.from(optimizedParameters.querySelectorAll('.parameter')).find(param => {
+                        return param.querySelector('.parameter-name').textContent.includes(paramName);
+                    });
+                    if (paramElement) {
+                        paramElement.querySelector('.parameter-value').textContent = value;
+                    }
+                });
+            }
+            
+            // Fonction pour calculer et mettre à jour les améliorations
+            function updateImprovements(dataset) {
+                const improvements = {};
+                const metrics = ['F1-Score', 'Precision', 'Recall'];
+                
+                metrics.forEach(metric => {
+                    const defaultValue = datasetValues[dataset].default[metric];
+                    const optimizedValue = datasetValues[dataset].optimized[metric];
+                    const percentImprovement = ((optimizedValue - defaultValue) / defaultValue * 100).toFixed(1);
+                    improvements[metric] = `+${percentImprovement}%`;
+                    
+                    // Mettre à jour les valeurs dans l'objet datasetValues
+                    datasetValues[dataset].improvements[metric] = `+${percentImprovement}%`;
+                });
+                
+                // Mise à jour des valeurs d'amélioration dans l'interface
+                const improvementsContainer = document.querySelector('.detailed-improvements .improvements-grid');
+                metrics.forEach(metric => {
+                    const improvementElement = Array.from(improvementsContainer.querySelectorAll('.improvement')).find(imp => {
+                        return imp.querySelector('.improvement-metric').textContent.includes(metric);
+                    });
+                    
+                    if (improvementElement) {
+                        improvementElement.querySelector('.improvement-value').textContent = improvements[metric];
+                    }
+                });
+                
+                console.log(`Améliorations calculées pour ${dataset}:`, improvements);
+                return improvements;
+            }
+            
+            // Gestionnaire d'événements pour les boutons de dataset
+            datasetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Enlever la classe active de tous les boutons
+                    datasetButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Ajouter la classe active au bouton cliqué
+                    this.classList.add('active');
+                    
+                    // Mettre à jour les graphiques avec le dataset sélectionné
+                    const dataset = this.getAttribute('data-dataset');
+                    updateCharts(dataset);
+                    updateImprovements(dataset);
+                });
+            });
+            
+            printButton.addEventListener('click', function() {
+                window.print();
+            });
+            
+            // Add hover functionality for tooltips
+            chartBars.forEach(bar => {
+                bar.addEventListener('mouseenter', function() {
+                    const tooltip = this.querySelector('.tooltip');
+                    if (tooltip) {
+                        tooltip.classList.add('visible');
+                    }
+                });
+                
+                bar.addEventListener('mouseleave', function() {
+                    const tooltip = this.querySelector('.tooltip');
+                    if (tooltip) {
+                        tooltip.classList.remove('visible');
+                    }
+                });
+            });
+            
+            // Initialiser avec le premier dataset (ant-1.3)
+            updateCharts('ant-1.3');
+            updateImprovements('ant-1.3');
+        });
+    </script>
+</body>
+</html>
