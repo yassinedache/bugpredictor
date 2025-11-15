@@ -52,7 +52,7 @@ Parameters are improved using a custom genetic algorithm.
 ### 📊 Performance Improvement Summary  
 You can clearly see the improvement after optimization.
 
-![Performance Summary](optimization.png)
+![Performance Summary](screenshots/optimization.png)
 
 ---
 
@@ -138,6 +138,9 @@ interface-main/
 ├── trained_models
 └── pycache
 
+```
+
+
 ### Folder Summary
 - **algorithms/** — ML models + GA optimizers  
 - **datasets/** — Input datasets  
@@ -157,6 +160,8 @@ python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
+
+```
 
 ## 🛠️ Technologies Used
 
@@ -195,6 +200,12 @@ This project is useful for:
 **BugPredictor** combines machine learning, metaheuristics, and a complete web interface to deliver a powerful software defect prediction system.
 
 It provides:
+- Clean and intuitive visual feedback  
+- Modular, extensible architecture  
+- Support for real-world datasets  
+- Significant performance improvements through optimization  
+
+🚀 *A practical tool for developers, researchers, and QA engineers.*
 - Clean and intuitive visual feedback  
 - Modular, extensible architecture  
 - Support for real-world datasets  
