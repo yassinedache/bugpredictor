@@ -1,0 +1,218 @@
+{
+ "benchmark": [
+  "ant-1.7",
+  "camel-1.6",
+  "ivy-2.0",
+  "jedit-4.2",
+  "log4j-1.1",
+  "lucene-2.4",
+  "poi-3.0",
+  "synapse-1.2",
+  "velocity-1.6",
+  "xalan-2.6",
+  "xerces-1.3"
+ ],
+ "leakage": {
+  "rows": [
+   {
+    "release": "ant-1.7",
+    "leaky_ga": 0.8939,
+    "honest_ga": 0.5737,
+    "honest_default": 0.5753,
+    "knn1_leaky": 0.8846,
+    "knn1_honest": 0.5321
+   },
+   {
+    "release": "camel-1.6",
+    "leaky_ga": 0.8781,
+    "honest_ga": 0.369,
+    "honest_default": 0.3938,
+    "knn1_leaky": 0.8619,
+    "knn1_honest": 0.3543
+   },
+   {
+    "release": "ivy-2.0",
+    "leaky_ga": 0.9392,
+    "honest_ga": 0.3633,
+    "honest_default": 0.3063,
+    "knn1_leaky": 0.907,
+    "knn1_honest": 0.3238
+   },
+   {
+    "release": "jedit-4.2",
+    "leaky_ga": 0.9483,
+    "honest_ga": 0.4286,
+    "honest_default": 0.3884,
+    "knn1_leaky": 0.9325,
+    "knn1_honest": 0.4566
+   },
+   {
+    "release": "log4j-1.1",
+    "leaky_ga": 0.9052,
+    "honest_ga": 0.6216,
+    "honest_default": 0.5847,
+    "knn1_leaky": 0.8759,
+    "knn1_honest": 0.646
+   },
+   {
+    "release": "lucene-2.4",
+    "leaky_ga": 0.7766,
+    "honest_ga": 0.6891,
+    "honest_default": 0.7093,
+    "knn1_leaky": 0.7695,
+    "knn1_honest": 0.7408
+   },
+   {
+    "release": "poi-3.0",
+    "leaky_ga": 0.8535,
+    "honest_ga": 0.8278,
+    "honest_default": 0.8115,
+    "knn1_leaky": 0.8342,
+    "knn1_honest": 0.8211
+   },
+   {
+    "release": "synapse-1.2",
+    "leaky_ga": 0.8746,
+    "honest_ga": 0.661,
+    "honest_default": 0.6317,
+    "knn1_leaky": 0.8516,
+    "knn1_honest": 0.6033
+   },
+   {
+    "release": "velocity-1.6",
+    "leaky_ga": 0.8565,
+    "honest_ga": 0.5817,
+    "honest_default": 0.5769,
+    "knn1_leaky": 0.8131,
+    "knn1_honest": 0.5792
+   },
+   {
+    "release": "xalan-2.6",
+    "leaky_ga": 0.7875,
+    "honest_ga": 0.7307,
+    "honest_default": 0.7173,
+    "knn1_leaky": 0.7597,
+    "knn1_honest": 0.67
+   },
+   {
+    "release": "xerces-1.3",
+    "leaky_ga": 0.9237,
+    "honest_ga": 0.5081,
+    "honest_default": 0.4628,
+    "knn1_leaky": 0.9194,
+    "knn1_honest": 0.4822
+   }
+  ],
+  "mean": {
+   "leaky_ga": 0.8761,
+   "honest_ga": 0.5777,
+   "honest_default": 0.5598,
+   "knn1_leaky": 0.8554,
+   "knn1_honest": 0.5645
+  }
+ },
+ "ga": [
+  {
+   "model": "knn",
+   "default_f1": 0.5598,
+   "ga_f1": 0.5777,
+   "wins": 8,
+   "n": 11,
+   "features": 6.71,
+   "total": 20,
+   "inner_cv": 0.6764
+  },
+  {
+   "model": "svm",
+   "default_f1": 0.5843,
+   "ga_f1": 0.5741,
+   "wins": 5,
+   "n": 11,
+   "features": 6.22,
+   "total": 20,
+   "inner_cv": 0.6702
+  },
+  {
+   "model": "lr",
+   "default_f1": 0.5806,
+   "ga_f1": 0.5774,
+   "wins": 4,
+   "n": 11,
+   "features": 5.91,
+   "total": 20,
+   "inner_cv": 0.6503
+  }
+ ],
+ "baseline": {
+  "models": [
+   "knn",
+   "lr",
+   "nb",
+   "svm",
+   "rf"
+  ],
+  "mean": {
+   "f1": {
+    "knn": 0.5679,
+    "lr": 0.5879,
+    "nb": 0.5826,
+    "svm": 0.588,
+    "rf": 0.6033
+   },
+   "mcc": {
+    "knn": 0.3709,
+    "lr": 0.4038,
+    "nb": 0.3922,
+    "svm": 0.4084,
+    "rf": 0.4415
+   },
+   "auc": {
+    "knn": 0.7737,
+    "lr": 0.7987,
+    "nb": 0.7864,
+    "svm": 0.7962,
+    "rf": 0.8201
+   },
+   "recall_20": {
+    "knn": 0.4438,
+    "lr": 0.4644,
+    "nb": 0.3725,
+    "svm": 0.4637,
+    "rf": 0.4691
+   }
+  },
+  "manual_up": 0.4455
+ },
+ "transfer": [
+  {
+   "model": "knn",
+   "within": 0.5679,
+   "cross_version": 0.5013,
+   "cross_project": 0.4496
+  },
+  {
+   "model": "lr",
+   "within": 0.5879,
+   "cross_version": 0.5273,
+   "cross_project": 0.4946
+  },
+  {
+   "model": "nb",
+   "within": 0.5826,
+   "cross_version": 0.5403,
+   "cross_project": 0.5318
+  },
+  {
+   "model": "svm",
+   "within": 0.588,
+   "cross_version": 0.4982,
+   "cross_project": 0.4924
+  },
+  {
+   "model": "rf",
+   "within": 0.6033,
+   "cross_version": 0.5088,
+   "cross_project": 0.4436
+  }
+ ]
+}
