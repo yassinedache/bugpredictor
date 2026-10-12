@@ -9,7 +9,7 @@
 ## Ce que fait l'outil
 
 1. **Choisir les données** : l'un des 11 projets Java open source du dépôt PROMISE, ou votre propre fichier CSV/ARFF (une ligne par classe ou module, des métriques numériques, une colonne de bugs).
-2. **Choisir un modèle** : k plus proches voisins, régression logistique, Bayes naïf gaussien, ainsi que SVM et forêt aléatoire avec le moteur Python.
+2. **Choisir un modèle** : k plus proches voisins, SVM (noyau RBF), régression logistique, Bayes naïf gaussien ou forêt aléatoire.
 3. **L'algorithme génétique** cherche, génération après génération, quelles métriques garder et comment régler les hyperparamètres du modèle.
 4. **Comparaison honnête** : le modèle par défaut et le modèle optimisé sont évalués sur 30 % des classes mises de côté, que l'AG n'a jamais vues. Le verdict indique clairement quand l'AG n'a *pas* aidé.
 5. **Classes à relire en priorité** : chaque classe reçoit un score de risque calculé par un modèle qui ne l'a pas vue à l'entraînement (prédictions hors-pli), avec un score tenant compte de l'effort (combien de classes boguées on trouve en lisant 20 % du code). Le classement se télécharge en CSV.
@@ -25,13 +25,13 @@ python -m venv .venv && source .venv/bin/activate      # Windows : .venv\Scripts
 pip install -r requirements.txt
 
 uvicorn app.server:app          # application web + moteur Python sur http://127.0.0.1:8000
-pytest                          # 20 tests (Node.js lance aussi le test de parité JavaScript)
+pytest                          # 21 tests (si Node.js est installé, ils incluent les tests de parité JavaScript)
 python experiments/run_all.py   # toutes les expériences, environ 1 h 30 sur 2 cœurs
 ```
 
 Avec Docker : `docker build -t bugpredictor . && docker run -p 8000:8000 bugpredictor`.
 
-Le dossier `web/` est aussi un **site statique autonome** : ouvert sans le serveur Python (par exemple sur Vercel, comme la démo en ligne), il exécute un portage JavaScript du pipeline (`web/js/ml.js`) dans un Web Worker. `tests/test_js_parity.py` vérifie que les modèles JavaScript donnent les mêmes probabilités que scikit-learn (k-NN et Bayes naïf à 1e-9 près, régression logistique à 1e-6 près), ainsi que les mêmes métriques et la même lecture des fichiers.
+Le dossier `web/` est aussi un **site statique autonome** : ouvert sans le serveur Python (par exemple sur Vercel, comme la démo en ligne), il exécute un portage JavaScript de tout le pipeline (`web/js/ml.js`), les cinq modèles compris, sur plusieurs Web Workers afin que l'AG évalue ses individus en parallèle. `tests/test_js_parity.py` compare ce portage à scikit-learn : le k-NN et le Bayes naïf donnent les mêmes probabilités (à 1e-9 près) et la régression logistique le même optimum (1e-6) ; le SVM utilise le solveur SMO de libsvm et ses valeurs de décision concordent à la tolérance du solveur près (1e-3) ; un arbre de la forêt aléatoire est identique à celui de scikit-learn quand deux coupures ne sont pas à égalité, et les forêts atteignent la même AUC (±0,02) ; les métriques et la lecture des fichiers sont identiques.
 
 ## Fonctionnement
 

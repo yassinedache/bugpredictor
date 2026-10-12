@@ -5,9 +5,42 @@
   var BLUE = "#1a73e8", BLUE_BAR = "#a5c0f7", GREEN = "#4caf50", RED = "#d93025", GREY = "#9ca3af";
   var API = window.BP_API || null;
   var S = { engine: API ? "api" : "browser", manifest: [], source: "promise", selected: "ant-1.7", upload: null,
-            model: "knn", gens: 15, pop: 20, seed: 0, worker: null, poll: null, result: null, runId: 0, charts: {}, research: null };
+            model: "knn", gens: 15, pop: 20, seed: 0, pool: null, poll: null, result: null, runId: 0, charts: {}, research: null };
   var MODEL_LIST = ["knn", "lr", "nb", "svm", "rf"];
-  var BROWSER_MODELS = ["knn", "lr", "nb"];
+  var WORKERS = Math.max(1, Math.min(8, navigator.hardwareConcurrency || 2));
+
+  /* A pool of Web Workers that run training jobs in parallel (see js/worker.js). */
+  function Pool(n, ds) {
+    var self = this;
+    this.size = n; this.workers = []; this.idle = []; this.queue = []; this.pending = {}; this.next = 0;
+    for (var i = 0; i < n; i++) {
+      var w = new Worker("js/worker.js");
+      w.postMessage({ type: "init", data: { X: ds.X, y: ds.y } });
+      w.onmessage = function (e) {
+        var p = self.pending[e.data.id];
+        if (!p) return;
+        delete self.pending[e.data.id];
+        self.idle.push(p.worker);
+        if (e.data.type === "result") p.resolve({ pred: e.data.pred, scores: e.data.scores });
+        else p.reject(new Error(e.data.message));
+        self.pump();
+      };
+      w.onerror = function (e) { Object.keys(self.pending).forEach(function (k) { self.pending[k].reject(new Error(e.message || "worker error")); }); };
+      this.workers.push(w); this.idle.push(w);
+    }
+  }
+  Pool.prototype.run = function (job) {
+    var self = this;
+    return new Promise(function (resolve, reject) { self.queue.push({ job: job, resolve: resolve, reject: reject }); self.pump(); });
+  };
+  Pool.prototype.pump = function () {
+    while (this.idle.length && this.queue.length) {
+      var w = this.idle.pop(), t = this.queue.shift(), id = ++this.next;
+      this.pending[id] = { worker: w, resolve: t.resolve, reject: t.reject };
+      w.postMessage({ type: "job", id: id, job: t.job });
+    }
+  };
+  Pool.prototype.terminate = function () { this.workers.forEach(function (w) { w.terminate(); }); this.queue = []; this.pending = {}; };
 
   /* ---------------------------------------------------------------- helpers */
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -90,11 +123,10 @@
   }
   function renderModels() {
     $("#models").innerHTML = MODEL_LIST.map(function (m) {
-      var ok = S.engine === "api" || BROWSER_MODELS.indexOf(m) >= 0;
-      return '<button type="button" class="model" data-model="' + m + '" aria-pressed="' + (m === S.model) + '"' + (ok ? "" : " disabled") + ">" +
-        "<b>" + esc(modelName(m)) + "</b><small>" + esc(ok ? t("m_" + m + "_d") : t("pythonOnly")) + "</small></button>";
+      return '<button type="button" class="model" data-model="' + m + '" aria-pressed="' + (m === S.model) + '">' +
+        "<b>" + esc(modelName(m)) + "</b><small>" + esc(t("m_" + m + "_d")) + "</small></button>";
     }).join("");
-    $("#engineNote").textContent = t(S.engine === "api" ? "engineApi" : "engineBrowser");
+    $("#engineNote").textContent = t(S.engine === "api" ? "engineApi" : "engineBrowser", { n: WORKERS });
   }
   function updateStart() {
     var ready = S.source === "promise" ? !!S.selected : !!S.upload;
@@ -136,7 +168,7 @@
   }
   function stopRun() {
     S.runId++;
-    if (S.worker) { S.worker.terminate(); S.worker = null; }
+    if (S.pool) { S.pool.terminate(); S.pool = null; }
     if (S.poll) { clearTimeout(S.poll); S.poll = null; }
   }
   function start(newSeed) {
@@ -191,14 +223,12 @@
     var textP = S.source === "promise" ? fetchText("data/promise/" + S.selected + ".csv") : Promise.resolve(S.upload.text);
     textP.then(function (text) {
       if (run !== S.runId) return;
-      S.worker = new Worker("js/worker.js");
-      S.worker.onmessage = function (e) {
-        if (e.data.type === "progress") onEvent(e.data.ev);
-        else if (e.data.type === "done") { S.worker.terminate(); S.worker = null; onDone(e.data.result); }
-        else onError(e.data.message);
-      };
-      S.worker.onerror = function (e) { onError(e.message || "worker error"); };
-      S.worker.postMessage({ text: text, name: name, opts: opts });
+      var ds = BPML.parse(text, name);
+      S.pool = new Pool(WORKERS, ds);
+      return BPML.analyzeAsync(ds, opts, onEvent, S.pool).then(function (res) {
+        if (S.pool) { S.pool.terminate(); S.pool = null; }
+        onDone(res);
+      });
     }).catch(function (e) { onError(e.message); });
   }
 
@@ -250,7 +280,7 @@
     var d = r.default.metrics, o = r.optimized.metrics, nF = r.optimized.features.length, total = r.default.features.length;
     $("#resTitle").textContent = t("resTitle", { ds: r.dataset.name, model: modelName(r.model) });
     $("#resChips").innerHTML = [t("chipSplit", { tr: r.split.train, te: r.split.test, d: r.split.test_defective }),
-      t("chipEngine", { e: t(r.engine === "python" ? "engPython" : "engBrowser") }), t("chipEvals", { n: r.ga.evaluations }),
+      t("chipEngine", { e: r.engine === "python" ? t("engPython") : t("engBrowser", { n: r.workers || 1 }) }), t("chipEvals", { n: r.ga.evaluations }),
       t("chipTime", { s: I.num(r.seconds, 1) })].map(function (c) { return '<span class="chip">' + esc(c) + "</span>"; }).join("");
     var diff = o.f1 - d.f1, kind = Math.abs(diff) < 0.01 ? "same" : diff > 0 ? "good" : "bad";
     var vars = { n: r.split.test, o: I.num(o.f1, 3), d: I.num(d.f1, 3), diff: (diff >= 0 ? "+" : "−") + I.num(Math.abs(diff), 3), k: nF, m: total };

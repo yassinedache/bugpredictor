@@ -329,15 +329,228 @@
   };
   GNB.prototype.predict = function (Q) { return this.proba(Q).map(function (p) { return p > 0.5 ? 1 : 0; }); };
 
+  /* Support vector machine with an RBF kernel, trained like libsvm (the solver inside scikit-learn's SVC):
+     SMO on the dual problem, second-order working-set selection (Fan, Chen & Lin, 2005), stopping tolerance 1e-3. */
+  function SVC(p) { this.C = p.C; this.gamma = p.gamma; }
+  SVC.prototype.fit = function (X, y01) {
+    var n = X.length, d = X[0].length, C = this.C, TAU = 1e-12, EPS = 1e-3, i, j, k;
+    var gamma = this.gamma;
+    if (gamma === "scale" || gamma == null) {               // scikit-learn: 1 / (n_features * X.var())
+      var m = 0, s2 = 0;
+      for (i = 0; i < n; i++) for (j = 0; j < d; j++) m += X[i][j];
+      m /= n * d;
+      for (i = 0; i < n; i++) for (j = 0; j < d; j++) s2 += (X[i][j] - m) * (X[i][j] - m);
+      var v = s2 / (n * d);
+      gamma = v > 0 ? 1 / (d * v) : 1;
+    }
+    var flat = new Float64Array(n * d), sq = new Float64Array(n), y = new Int8Array(n);
+    for (i = 0; i < n; i++) {
+      var s = 0;
+      for (j = 0; j < d; j++) { var x = X[i][j]; flat[i * d + j] = x; s += x * x; }
+      sq[i] = s; y[i] = y01[i] ? 1 : -1;
+    }
+    var cache = new Map(), maxRows = Math.max(2, Math.floor(1.5e7 / n));   // about 120 MB of kernel rows at most
+    function row(a) {                                       // Q[a][t] = y_a y_t K(x_a, x_t)
+      var r = cache.get(a);
+      if (r) return r;
+      r = new Float64Array(n);
+      var oa = a * d;
+      for (var t = 0; t < n; t++) {
+        var dot = 0, ot = t * d;
+        for (var q = 0; q < d; q++) dot += flat[oa + q] * flat[ot + q];
+        r[t] = y[a] * y[t] * Math.exp(-gamma * (sq[a] + sq[t] - 2 * dot));
+      }
+      if (cache.size >= maxRows) cache.delete(cache.keys().next().value);
+      cache.set(a, r);
+      return r;
+    }
+    var alpha = new Float64Array(n), G = new Float64Array(n).fill(-1), maxIter = Math.max(1e6, 100 * n);
+    for (var it = 0; it < maxIter; it++) {
+      var Gmax = -Infinity, ii = -1;
+      for (k = 0; k < n; k++) {
+        if (y[k] === 1) { if (alpha[k] < C && -G[k] >= Gmax) { Gmax = -G[k]; ii = k; } }
+        else if (alpha[k] > 0 && G[k] >= Gmax) { Gmax = G[k]; ii = k; }
+      }
+      var Qi = ii >= 0 ? row(ii) : null, Gmax2 = -Infinity, jj = -1, best = Infinity;
+      for (k = 0; k < n; k++) {
+        var gd, quad;
+        if (y[k] === 1) {
+          if (alpha[k] > 0) {
+            gd = Gmax + G[k];
+            if (G[k] >= Gmax2) Gmax2 = G[k];
+            if (gd > 0) { quad = 2 - 2 * y[ii] * Qi[k]; if (quad <= 0) quad = TAU; if (-(gd * gd) / quad <= best) { best = -(gd * gd) / quad; jj = k; } }
+          }
+        } else if (alpha[k] < C) {
+          gd = Gmax - G[k];
+          if (-G[k] >= Gmax2) Gmax2 = -G[k];
+          if (gd > 0) { quad = 2 + 2 * y[ii] * Qi[k]; if (quad <= 0) quad = TAU; if (-(gd * gd) / quad <= best) { best = -(gd * gd) / quad; jj = k; } }
+        }
+      }
+      if (Gmax + Gmax2 < EPS || jj < 0) break;
+      i = ii; j = jj;
+      var Qj = row(j), ai = alpha[i], aj = alpha[j], oi = ai, oj = aj, qd, delta;
+      if (y[i] !== y[j]) {
+        qd = 2 + 2 * Qi[j]; if (qd <= 0) qd = TAU;
+        delta = (-G[i] - G[j]) / qd;
+        var diff = ai - aj;
+        ai += delta; aj += delta;
+        if (diff > 0) { if (aj < 0) { aj = 0; ai = diff; } } else if (ai < 0) { ai = 0; aj = -diff; }
+        if (diff > 0) { if (ai > C) { ai = C; aj = C - diff; } } else if (aj > C) { aj = C; ai = C + diff; }
+      } else {
+        qd = 2 - 2 * Qi[j]; if (qd <= 0) qd = TAU;
+        delta = (G[i] - G[j]) / qd;
+        var sum = ai + aj;
+        ai -= delta; aj += delta;
+        if (sum > C) { if (ai > C) { ai = C; aj = sum - C; } } else if (aj < 0) { aj = 0; ai = sum; }
+        if (sum > C) { if (aj > C) { aj = C; ai = sum - C; } } else if (ai < 0) { ai = 0; aj = sum; }
+      }
+      alpha[i] = ai; alpha[j] = aj;
+      var di = ai - oi, dj = aj - oj;
+      for (k = 0; k < n; k++) G[k] += Qi[k] * di + Qj[k] * dj;
+    }
+    var free = 0, sumFree = 0, ub = Infinity, lb = -Infinity;
+    for (k = 0; k < n; k++) {
+      var yG = y[k] * G[k];
+      if (alpha[k] >= C) { if (y[k] === -1) ub = Math.min(ub, yG); else lb = Math.max(lb, yG); }
+      else if (alpha[k] <= 0) { if (y[k] === 1) ub = Math.min(ub, yG); else lb = Math.max(lb, yG); }
+      else { free++; sumFree += yG; }
+    }
+    this.rho = free > 0 ? sumFree / free : (ub + lb) / 2;
+    this.gammaUsed = gamma;
+    this.sv = []; this.coef = [];
+    for (k = 0; k < n; k++) if (alpha[k] > 0) { this.sv.push(X[k]); this.coef.push(alpha[k] * y[k]); }
+    return this;
+  };
+  SVC.prototype.decision = function (Q) {
+    var sv = this.sv, coef = this.coef, g = this.gammaUsed, rho = this.rho;
+    return Q.map(function (q) {
+      var s = 0;
+      for (var a = 0; a < sv.length; a++) {
+        var x = sv[a], dist = 0;
+        for (var j = 0; j < q.length; j++) { var t = q[j] - x[j]; dist += t * t; }
+        s += coef[a] * Math.exp(-g * dist);
+      }
+      return s - rho;
+    });
+  };
+  SVC.prototype.scores = SVC.prototype.decision;
+  SVC.prototype.predict = function (Q) { return this.decision(Q).map(function (v) { return v > 0 ? 1 : 0; }); };
+
+  /* Random forest as in scikit-learn: bootstrap samples, CART trees grown with the Gini criterion on
+     sqrt(n_features) random metrics per split, exact thresholds (midpoints between sorted values).
+     Each metric is sorted once per forest; nodes split these sorted lists (no re-sorting). */
+  function Forest(p, seed) {
+    this.nTrees = p.n_estimators; this.maxDepth = p.max_depth == null ? Infinity : p.max_depth;
+    this.minLeaf = p.min_samples_leaf; this.bootstrap = p.bootstrap !== false; this.mtry = p.max_features;
+    this.seed = seed || 0;
+  }
+  Forest.prototype.fit = function (X, y01) {
+    var n = X.length, d = X[0].length, r = rng(this.seed * 7919 + 13), self = this, f, i, k;
+    var mtry = this.mtry === "all" ? d : Math.max(1, Math.floor(Math.sqrt(d)));
+    var V = new Float64Array(d * n), order = [];               // column-major values, one sorted order per metric
+    for (f = 0; f < d; f++) {
+      for (i = 0; i < n; i++) V[f * n + i] = X[i][f];
+      var o = new Uint32Array(n), base0 = f * n;
+      for (i = 0; i < n; i++) o[i] = i;
+      order.push(o.sort(function (a, b) { return V[base0 + a] - V[base0 + b] || a - b; }));
+    }
+    var y = new Uint8Array(n);
+    for (i = 0; i < n; i++) y[i] = y01[i] ? 1 : 0;
+    // S[f*n + lo .. hi) = the rows of the current node, sorted by metric f; nodes split these ranges in place
+    var S = new Uint32Array(d * n), tmp = new Uint32Array(n), goLeft = new Uint8Array(n), w = new Float64Array(n), feats = new Uint32Array(d);
+    var T;                                                     // the tree being grown
+    function build(lo, hi, depth) {
+      var m = hi - lo, w0 = 0, w1 = 0, q;
+      for (k = lo; k < hi; k++) { q = S[k]; if (y[q]) w1 += w[q]; else w0 += w[q]; }
+      var id = T.f.length;
+      T.f.push(-1); T.thr.push(0); T.l.push(0); T.r.push(0); T.p.push(w1 / (w0 + w1));
+      if (depth >= self.maxDepth || m < 2 || m < 2 * self.minLeaf || w0 === 0 || w1 === 0) return id;
+      for (k = 0; k < d; k++) feats[k] = k;
+      var bestScore = -Infinity, bestF = -1, bestPos = -1, bestThr = 0, visited = 0, tot = w0 + w1;
+      for (var drawn = 0; drawn < d && visited < mtry; drawn++) {      // draw metrics without replacement
+        var pick = drawn + randint(r, d - drawn), t0 = feats[drawn];
+        feats[drawn] = feats[pick]; feats[pick] = t0;
+        f = feats[drawn];
+        var base = f * n, vb = f * n;
+        if (V[vb + S[base + hi - 1]] <= V[vb + S[base + lo]] + 1e-7) continue;   // constant here: does not count (as scikit-learn)
+        visited++;
+        var l0 = 0, l1 = 0;
+        for (k = lo; k < hi - 1; k++) {
+          var sk = S[base + k], vk = V[vb + sk], vn = V[vb + S[base + k + 1]];
+          if (y[sk]) l1 += w[sk]; else l0 += w[sk];
+          if (vn <= vk + 1e-7) continue;                              // scikit-learn's FEATURE_THRESHOLD
+          var nl = k - lo + 1;
+          if (nl < self.minLeaf || m - nl < self.minLeaf) continue;
+          var wl = l0 + l1, wr = tot - wl, r0 = w0 - l0, r1 = w1 - l1;
+          var score = (l0 * l0 + l1 * l1) / wl + (r0 * r0 + r1 * r1) / wr;   // = -(weighted Gini of the children) + const
+          if (score > bestScore) {
+            bestScore = score; bestF = f; bestPos = k;
+            var th = vk / 2 + vn / 2;
+            bestThr = (th === vn || th === Infinity) ? vk : th;
+          }
+        }
+      }
+      if (bestF < 0) return id;
+      var bb = bestF * n, nLeft = bestPos - lo + 1;
+      for (k = lo; k < hi; k++) goLeft[S[bb + k]] = k <= bestPos ? 1 : 0;
+      for (f = 0; f < d; f++) {                                  // stable in-place partition of every sorted list
+        var b2 = f * n, pl = b2 + lo, tz = 0;
+        for (k = b2 + lo; k < b2 + hi; k++) { q = S[k]; if (goLeft[q]) S[pl++] = q; else tmp[tz++] = q; }
+        S.set(tmp.subarray(0, tz), pl);
+      }
+      T.f[id] = bestF; T.thr[id] = bestThr;
+      var left = build(lo, lo + nLeft, depth + 1);
+      var right = build(lo + nLeft, hi, depth + 1);
+      T.l[id] = left; T.r[id] = right;
+      return id;
+    }
+    this.trees = [];
+    for (var t = 0; t < this.nTrees; t++) {
+      w.fill(0);
+      if (this.bootstrap) for (i = 0; i < n; i++) w[randint(r, n)] += 1;
+      else w.fill(1);
+      var u = 0;
+      for (f = 0; f < d; f++) {
+        var of = order[f], c = 0;
+        for (i = 0; i < n; i++) if (w[of[i]] > 0) S[f * n + c++] = of[i];
+        u = c;
+      }
+      T = { f: [], thr: [], l: [], r: [], p: [] };
+      build(0, u, 0);
+      this.trees.push({ f: Int32Array.from(T.f), thr: Float64Array.from(T.thr), l: Int32Array.from(T.l), r: Int32Array.from(T.r), p: Float64Array.from(T.p) });
+    }
+    return this;
+  };
+  Forest.prototype.proba = function (Q) {
+    var trees = this.trees;
+    return Q.map(function (q) {
+      var s = 0;
+      for (var t = 0; t < trees.length; t++) {
+        var T = trees[t], k = 0;
+        while (T.f[k] >= 0) k = q[T.f[k]] <= T.thr[k] ? T.l[k] : T.r[k];
+        s += T.p[k];
+      }
+      return s / trees.length;
+    });
+  };
+  Forest.prototype.predict = function (Q) { return this.proba(Q).map(function (p) { return p > 0.5 ? 1 : 0; }); };
+
+  [KNN, LogReg, GNB, Forest].forEach(function (M) { M.prototype.scores = M.prototype.proba; });
+
   function P(name, kind, low, high, choices) { return { name: name, kind: kind, low: low, high: high, choices: choices }; }
   var MODELS = {
     knn: { label: "K-nearest neighbours", make: function (p) { return new KNN(p); },
            default: { n_neighbors: 5, weights: "uniform", p: 2 },
            space: [P("n_neighbors", "int", 1, 30), P("weights", "choice", 0, 1, ["uniform", "distance"]), P("p", "choice", 0, 1, [1, 2])] },
+    svm: { label: "Support vector machine (RBF)", make: function (p) { return new SVC(p); },
+           default: { C: 1.0, gamma: "scale" }, space: [P("C", "log", 1e-2, 1e3), P("gamma", "log", 1e-4, 10.0)] },
     lr: { label: "Logistic regression", make: function (p) { return new LogReg(p); },
           default: { C: 1.0 }, space: [P("C", "log", 1e-3, 1e2)] },
     nb: { label: "Gaussian naive Bayes", make: function (p) { return new GNB(p); },
-          default: { var_smoothing: 1e-9 }, space: [P("var_smoothing", "log", 1e-12, 1.0)] }
+          default: { var_smoothing: 1e-9 }, space: [P("var_smoothing", "log", 1e-12, 1.0)] },
+    rf: { label: "Random forest", make: function (p, seed) { return new Forest(p, seed); },
+          default: { n_estimators: 100, max_depth: null, min_samples_leaf: 1 },
+          space: [P("n_estimators", "int", 20, 200), P("max_depth", "int", 2, 20), P("min_samples_leaf", "int", 1, 10)] }
   };
   function decodeParam(p, u) {
     u = Math.min(Math.max(u, 0), 1);
@@ -346,6 +559,7 @@
     return p.choices[Math.min(Math.floor(u * p.choices.length), p.choices.length - 1)];
   }
   function encodeParam(p, v) {
+    if (v == null || (typeof v === "string" && p.kind !== "choice")) return 0.5;   // gamma='scale', max_depth=None
     if (p.kind === "int") return (v - p.low) / (p.high - p.low);
     if (p.kind === "log") return (Math.log10(v) - Math.log10(p.low)) / (Math.log10(p.high) - Math.log10(p.low));
     return (p.choices.indexOf(v) + 0.5) / p.choices.length;
@@ -355,7 +569,7 @@
     var o = withDefaults(model, params);
     return Object.keys(o).map(function (k) {
       var v = o[k];
-      return { name: k, value: typeof v === "number" && !Number.isInteger(v) ? fmt3(v) : String(v) };
+      return { name: k, value: v == null ? "None" : typeof v === "number" && !Number.isInteger(v) ? fmt3(v) : String(v) };
     });
   }
   function fmt3(v) { var s = Number(v).toPrecision(3); return String(Number(s)).length < s.length ? String(Number(s)) : s; }
@@ -441,10 +655,15 @@
     var prep = new Preprocessor(true).fit(Xtr);
     var A = prep.transform(Xtr), B = prep.transform(Xte);
     var res = smote(A, ytr, rng(seed + 7919));
-    var m = MODELS[model].make(withDefaults(model, params)).fit(res.X, res.y);
-    var s = m.proba(B);
-    return { pred: s.map(function (p) { return p > 0.5 ? 1 : 0; }), scores: s };
+    var m = MODELS[model].make(withDefaults(model, params), seed).fit(res.X, res.y);
+    return { pred: m.predict(B), scores: m.scores(B) };
   }
+  /* A job = train on some rows of the dataset, predict others. Jobs are independent, so a pool of
+     Web Workers can run them in parallel; runJob is what each worker executes. */
+  function runJob(ds, job) {
+    return trainPredict(job.model, job.params, take(ds.X, job.train), take(ds.y, job.train), take(ds.X, job.test), job.mask, job.seed);
+  }
+  function localPool(ds) { return { size: 1, run: function (job) { return Promise.resolve(runJob(ds, job)); } }; }
 
   /* ------------------------------------------------------------------ genetic algorithm */
   function GA(model, o) {
@@ -455,7 +674,7 @@
     this.penalty = 0.005; this.inner = 5; this.seed = o.seed || 0;
   }
   GA.prototype.decode = function (genes) {
-    var self = this, out = {};
+    var out = {};
     if (!genes) return withDefaults(this.model, {});
     this.space.forEach(function (p, i) { out[p.name] = decodeParam(p, genes[i]); });
     return out;
@@ -464,24 +683,25 @@
     var d = MODELS[this.model].default;
     return this.space.map(function (p) { return Math.min(1, Math.max(0, encodeParam(p, d[p.name]))); });
   };
-  GA.prototype.run = function (X, y, onGen) {
-    var self = this, r = rng(this.seed * 2654435761 + 1), d = X[0].length, g = this.space.length, pbit = 1 / d;
-    var folds = stratifiedFolds(y, this.inner, rng(this.seed + 17)), cache = {}, evals = 0;
+  GA.prototype.folds = function (y) { return stratifiedFolds(y, this.inner, rng(this.seed + 17)); };
+  /* The search itself, written as a generator: it yields the individuals it needs evaluated and
+     receives their inner-CV F1, so the same code runs with local or parallel evaluation. */
+  GA.prototype.search = function* (d, onGen) {
+    var self = this, r = rng(this.seed * 2654435761 + 1), g = this.space.length, pbit = 1 / d, cache = {}, evals = 0;
     function repair(m) { if (!m.some(Boolean)) m[randint(r, d)] = true; return m; }
-    function fitness(m, genes) {
-      var params = self.decode(genes), key = m.map(Number).join("") + JSON.stringify(params);
-      if (cache[key]) return cache[key];
-      var f1 = 0;
-      folds.forEach(function (test, i) {
-        var inTest = {}; test.forEach(function (q) { inTest[q] = true; });
-        var tr = []; y.forEach(function (_, q) { if (!inTest[q]) tr.push(q); });
-        var o = trainPredict(self.model, params, take(X, tr), take(y, tr), take(X, test), m, self.seed + i);
-        f1 += evaluate(take(y, test), o.pred).f1;
-      });
-      f1 /= folds.length;
-      var nsel = m.filter(Boolean).length;
-      evals++;
-      return (cache[key] = { fit: f1 - self.penalty * nsel, f1: f1 });
+    function key(ind) { return ind.m.map(Number).join("") + JSON.stringify(self.decode(ind.g)); }
+    function* score(pop) {
+      var todo = [], seen = {};
+      pop.forEach(function (ind) { var k = key(ind); if (!cache[k] && !seen[k]) { seen[k] = true; todo.push({ m: ind.m, g: ind.g, key: k, params: self.decode(ind.g) }); } });
+      if (todo.length) {
+        var f1s = yield todo;
+        todo.forEach(function (t, i) {
+          var nsel = t.m.filter(Boolean).length;
+          cache[t.key] = { fit: f1s[i] - self.penalty * nsel, f1: f1s[i] };
+          evals++;
+        });
+      }
+      return pop.map(function (ind) { return cache[key(ind)]; });
     }
     var pop = [{ m: new Array(d).fill(true), g: null }];
     while (pop.length < this.pop) {
@@ -489,7 +709,7 @@
       var gn = []; for (j = 0; j < g; j++) gn.push(r());
       pop.push({ m: repair(m), g: gn });
     }
-    var sc = pop.map(function (ind) { return fitness(ind.m, ind.g); });
+    var sc = yield* score(pop);
     var history = [], bestSeen = -Infinity, stall = 0;
     for (var gen = 0; gen <= this.gens; gen++) {
       var order = sc.map(function (_, i) { return i; }).sort(function (a, b) { return sc[b].fit - sc[a].fit || a - b; });
@@ -520,10 +740,47 @@
         });
       }
       pop = kids.slice(0, this.pop);
-      sc = pop.map(function (ind) { return fitness(ind.m, ind.g); });
+      sc = yield* score(pop);
     }
     var bi = 0; sc.forEach(function (s, i) { if (s.fit > sc[bi].fit) bi = i; });
     return { mask: pop[bi].m, params: this.decode(pop[bi].g), fitness: sc[bi].fit, cv_f1: sc[bi].f1, history: history, evaluations: evals };
+  };
+  /* Synchronous run on a feature matrix (used by the tests). */
+  GA.prototype.run = function (X, y, onGen) {
+    var self = this, folds = this.folds(y), it = this.search(X[0].length, onGen), step = it.next();
+    while (!step.done) {
+      step = it.next(step.value.map(function (ind) {
+        var f1 = 0;
+        folds.forEach(function (test, i) {
+          var inT = {}; test.forEach(function (q) { inT[q] = true; });
+          var tr = []; y.forEach(function (_, q) { if (!inT[q]) tr.push(q); });
+          f1 += evaluate(take(y, test), trainPredict(self.model, ind.params, take(X, tr), take(y, tr), take(X, test), ind.m, self.seed + i).pred).f1;
+        });
+        return f1 / folds.length;
+      }));
+    }
+    return step.value;
+  };
+  /* Asynchronous run on rows `rows` of the dataset held by the pool: one job per individual and inner fold. */
+  GA.prototype.runAsync = async function (ds, rows, pool, onGen) {
+    var self = this, y = take(ds.y, rows), folds = this.folds(y), d = ds.X[0].length;
+    var splits = folds.map(function (test) {
+      var inT = {}; test.forEach(function (q) { inT[q] = true; });
+      var tr = []; y.forEach(function (_, q) { if (!inT[q]) tr.push(q); });
+      return { train: take(rows, tr), test: take(rows, test), ytest: take(y, test) };
+    });
+    var it = this.search(d, onGen), step = it.next();
+    while (!step.done) {
+      var batch = step.value;
+      var results = await Promise.all(batch.map(function (ind) {
+        return Promise.all(splits.map(function (s, i) {
+          return pool.run({ model: self.model, params: ind.params, train: s.train, test: s.test, mask: ind.m, seed: self.seed + i })
+            .then(function (o) { return evaluate(s.ytest, o.pred).f1; });
+        })).then(function (f) { return f.reduce(function (u, v) { return u + v; }, 0) / f.length; });
+      }));
+      step = it.next(results);
+    }
+    return step.value;
   };
 
   /* ------------------------------------------------------------------ the analysis of the web app */
@@ -531,40 +788,44 @@
   function round4(v) { return v == null || !isFinite(v) ? null : Math.round(v * 1e4) / 1e4; }
   function pick(m) { var o = {}; KEYS.forEach(function (k) { o[k] = round4(m[k]); }); return o; }
   function conf(m) { return { tp: m.tp, fp: m.fp, fn: m.fn, tn: m.tn }; }
+  function toUnit(s) {                     // decision values (SVM) -> (0, 1), as scores_to_unit in Python
+    var inside = s.every(function (v) { return v >= 0 && v <= 1; });
+    return inside ? s : s.map(sigmoid);
+  }
 
-  function analyze(ds, opts, progress) {
+  async function analyzeAsync(ds, opts, progress, pool) {
     opts = opts || {};
+    pool = pool || localPool(ds);
     var model = opts.model || "knn", gens = opts.generations == null ? 15 : opts.generations, popN = opts.population || 20, seed = opts.seed || 0;
     var say = progress || function () {}, t0 = Date.now();
-    if (!MODELS[model]) throw new Error("model '" + model + "' is only available with the Python engine");
+    if (!MODELS[model]) throw new Error("unknown model '" + model + "'");
     say({ stage: "processing", progress: 0.02 });
     var sp = stratifiedSplit(ds.y, 0.3, rng(seed + 101)), tr = sp.train, te = sp.test;
-    var ytr = take(ds.y, tr), yte = take(ds.y, te);
-    if (ytr.reduce(function (a, b) { return a + b; }, 0) < 3 || yte.reduce(function (a, b) { return a + b; }, 0) < 1)
-      throw new Error("not enough defective modules to train and test (need at least 4)");
-    var Xtr = take(ds.X, tr), Xte = take(ds.X, te);
+    var yte = take(ds.y, te), nTr1 = take(ds.y, tr).reduce(function (a, b) { return a + b; }, 0);
+    if (nTr1 < 3 || yte.reduce(function (a, b) { return a + b; }, 0) < 1) throw new Error("not enough defective modules to train and test (need at least 4)");
     say({ stage: "default", progress: 0.08 });
-    var o = trainPredict(model, {}, Xtr, ytr, Xte, null, seed);
+    var o = await pool.run({ model: model, params: {}, train: tr, test: te, mask: null, seed: seed });
     var def = evaluate(yte, o.pred, o.scores);
-    var ga = new GA(model, { population: popN, generations: gens, seed: seed }).run(Xtr, ytr, function (h) {
+    var ga = await new GA(model, { population: popN, generations: gens, seed: seed }).runAsync(ds, tr, pool, function (h) {
       say({ stage: "ga", progress: 0.1 + 0.8 * h.generation / Math.max(1, gens), generation: h.generation, best: h.best_f1, mean: h.mean, features: h.features });
     });
     say({ stage: "final", progress: 0.92 });
-    o = trainPredict(model, ga.params, Xtr, ytr, Xte, ga.mask, seed);
-    var opt = evaluate(yte, o.pred, o.scores);
-    var risk = new Array(ds.y.length);
-    stratifiedFolds(ds.y, 5, rng(seed + 303)).forEach(function (fold, f) {
+    var folds = stratifiedFolds(ds.y, 5, rng(seed + 303));
+    var outs = await Promise.all([pool.run({ model: model, params: ga.params, train: tr, test: te, mask: ga.mask, seed: seed })].concat(folds.map(function (fold, f) {
       var inF = {}; fold.forEach(function (i) { inF[i] = true; });
       var trn = []; ds.y.forEach(function (_, i) { if (!inF[i]) trn.push(i); });
-      var oo = trainPredict(model, ga.params, take(ds.X, trn), take(ds.y, trn), take(ds.X, fold), ga.mask, seed + f);
-      fold.forEach(function (i, q) { risk[i] = oo.scores[q]; });
-    });
+      return pool.run({ model: model, params: ga.params, train: trn, test: fold, mask: ga.mask, seed: seed + f });
+    })));
+    var opt = evaluate(yte, outs[0].pred, outs[0].scores);
+    var raw = new Array(ds.y.length);
+    folds.forEach(function (fold, f) { fold.forEach(function (i, q) { raw[i] = outs[f + 1].scores[q]; }); });
+    var risk = toUnit(raw);
     var locs = ds.loc || ds.y.map(function () { return 0; });   // equal risk: the smaller class first (cheaper to review)
     var order = risk.map(function (_, i) { return i; }).sort(function (a, b) { return risk[b] - risk[a] || locs[a] - locs[b] || a - b; });
     var selected = ds.features.filter(function (_, j) { return ga.mask[j]; });
     say({ stage: "done", progress: 1 });
     return {
-      engine: "browser", dataset: summary(ds), model: model, model_label: MODELS[model].label,
+      engine: "browser", workers: pool.size, dataset: summary(ds), model: model, model_label: MODELS[model].label,
       split: { train: tr.length, test: te.length, test_defective: yte.reduce(function (a, b) { return a + b; }, 0), seed: seed },
       default: { metrics: pick(def), confusion: conf(def), params: describe(model, {}), features: ds.features },
       optimized: { metrics: pick(opt), confusion: conf(opt), params: describe(model, ga.params), features: selected },
@@ -576,8 +837,9 @@
   }
 
   var API = { rng: rng, parse: parse, summary: summary, Preprocessor: Preprocessor, smote: smote, KNN: KNN, LogReg: LogReg, GNB: GNB,
-              MODELS: MODELS, evaluate: evaluate, auc: auc, recallAtEffort: recallAtEffort, stratifiedFolds: stratifiedFolds,
-              stratifiedSplit: stratifiedSplit, trainPredict: trainPredict, GA: GA, analyze: analyze, describe: describe };
+              SVC: SVC, Forest: Forest, MODELS: MODELS, evaluate: evaluate, auc: auc, recallAtEffort: recallAtEffort,
+              stratifiedFolds: stratifiedFolds, stratifiedSplit: stratifiedSplit, trainPredict: trainPredict, runJob: runJob,
+              localPool: localPool, GA: GA, analyzeAsync: analyzeAsync, describe: describe };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   else root.BPML = API;
 })(typeof self !== "undefined" ? self : this);

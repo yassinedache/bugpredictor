@@ -9,7 +9,7 @@
 ## What it does
 
 1. **Choose the data**: one of 11 open-source Java projects from the PROMISE repository, or your own CSV/ARFF file (one row per class or module, numeric metrics, a bug column).
-2. **Choose a model**: k-nearest neighbours, logistic regression, Gaussian naive Bayes, plus SVM and random forest with the Python engine.
+2. **Choose a model**: k-nearest neighbours, SVM (RBF kernel), logistic regression, Gaussian naive Bayes or random forest.
 3. **The genetic algorithm** searches, generation after generation, which of the code metrics to keep and how to set the model's hyperparameters.
 4. **Honest comparison**: the default and the optimised models are both scored on 30 % of the classes kept aside, which the GA never saw. The verdict says plainly when the GA did *not* help.
 5. **Classes to review first**: every class gets a risk score from a model that did not see it during training (out-of-fold predictions), with an effort-aware score (how many buggy classes you find by reading 20 % of the code). The ranking can be downloaded as CSV.
@@ -25,13 +25,13 @@ python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\
 pip install -r requirements.txt
 
 uvicorn app.server:app          # web app + Python engine on http://127.0.0.1:8000
-pytest                          # 20 tests (Node.js also runs the JavaScript parity test)
+pytest                          # 21 tests (with Node.js installed, they include the JavaScript parity tests)
 python experiments/run_all.py   # all experiments, about 1 h 30 on 2 cores
 ```
 
 With Docker: `docker build -t bugpredictor . && docker run -p 8000:8000 bugpredictor`.
 
-The `web/` folder is also a **self-contained static site**: opened without the Python server (for example on Vercel, as in the live demo), it runs a JavaScript port of the pipeline (`web/js/ml.js`) in a Web Worker. `tests/test_js_parity.py` checks that the JavaScript models give the same probabilities as scikit-learn (k-NN and naive Bayes to 1e-9, logistic regression to 1e-6), and the same metrics and parsing.
+The `web/` folder is also a **self-contained static site**: opened without the Python server (for example on Vercel, as in the live demo), it runs a JavaScript port of the whole pipeline (`web/js/ml.js`), all five models included, on a pool of Web Workers so that the GA evaluates its individuals in parallel. `tests/test_js_parity.py` checks the port against scikit-learn: k-NN and naive Bayes give the same probabilities (to 1e-9) and logistic regression the same optimum (1e-6); the SVM uses libsvm's SMO solver and its decision values agree within the solver's tolerance (1e-3); a tree of the random forest is identical to scikit-learn's when no two splits tie, and forests reach the same AUC (±0.02); metrics and file parsing are identical.
 
 As a library:
 

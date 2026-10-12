@@ -99,7 +99,7 @@ code { background: var(--blue-card); color: var(--blue-dark); padding: 1px 6px; 
 .file-name { font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file-meta { color: var(--muted); font-size: 13.5px; }
 .models { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
-.model { text-align: left; border: 1.5px solid var(--line); background: #fff; border-radius: 12px; padding: 12px 14px; cursor: pointer; font: inherit; color: var(--text); }
+.model { display: flex; flex-direction: column; justify-content: flex-start; text-align: left; border: 1.5px solid var(--line); background: #fff; border-radius: 12px; padding: 12px 14px; cursor: pointer; font: inherit; color: var(--text); }
 .model b { display: block; color: var(--ink); }
 .model small { color: var(--muted); font-size: 13px; }
 .model[aria-pressed="true"] { border-color: var(--blue); background: var(--blue-card); box-shadow: 0 0 0 3px rgba(26, 115, 232, .12); }

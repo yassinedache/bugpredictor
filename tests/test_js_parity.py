@@ -1,8 +1,9 @@
 """The browser engine (web/js/ml.js) must give the same numbers as the Python package.
 
 Runs the JavaScript with Node.js on inputs prepared here; skipped when Node is not installed.
-Random steps (SMOTE, the GA) use different generators in the two languages, so they are
-checked through their deterministic parts: preprocessing, models, metrics, parsing.
+Random steps (SMOTE, the GA, the random forest) use different generators in the two languages,
+so they are checked through their deterministic parts (preprocessing, models, metrics, parsing,
+single trees) and, for the forest, through the quality of its predictions.
 """
 
 import json
@@ -104,3 +105,48 @@ def test_js_matches_python(tmp_path):
     np.testing.assert_allclose(out["parsed"]["X0"], ivy.X[0])
     a = load(ARFF.encode())
     assert out["arff"]["features"] == a.features and out["arff"]["y"] == a.y.tolist()
+
+
+JS_SVM_RF = r"""
+const ML = require(process.argv[1]); const inp = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+const out = {
+  svm: inp.svms.map(p => new ML.SVC(p).fit(inp.Xtr, inp.ytr).decision(inp.Xte)),
+  tree: new ML.Forest({n_estimators: 1, max_depth: 4, min_samples_leaf: 3, bootstrap: false, max_features: 'all'}, 0)
+          .fit(inp.Ttr, inp.tytr).proba(inp.Tte),
+  rf: [0, 1, 2].map(s => new ML.Forest({n_estimators: 100, max_depth: null, min_samples_leaf: 1}, s).fit(inp.Xtr, inp.ytr).proba(inp.Xte))
+};
+process.stdout.write(JSON.stringify(out));
+"""
+
+
+def test_js_svm_and_forest_match_python():
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.metrics import roc_auc_score
+    from sklearn.svm import SVC
+    from sklearn.tree import DecisionTreeClassifier
+
+    d = load_promise("ant-1.7")
+    Z = Preprocessor().fit(d.X[:500]).transform(d.X)
+    Xtr, ytr, Xte, yte = Z[:500], d.y[:500], Z[500:], d.y[500:]
+    rng = np.random.default_rng(0)                     # tie-free data for the exact tree comparison
+    T = rng.normal(size=(600, 8)).astype(np.float32).astype(np.float64)
+    ty = ((T[:, 0] + 0.7 * T[:, 1] ** 2 - T[:, 2] * T[:, 3] + rng.normal(0, 0.8, 600)) > 0.5).astype(int)
+    svms = [{"C": 1.0, "gamma": "scale"}, {"C": 0.05, "gamma": 0.01}, {"C": 30.0, "gamma": 0.02}, {"C": 500.0, "gamma": 0.3}]
+    proc = subprocess.run([NODE, "-e", JS_SVM_RF, str(ROOT / "web" / "js" / "ml.js")], capture_output=True, text=True, timeout=300,
+                          input=json.dumps({"Xtr": Xtr.tolist(), "ytr": ytr.tolist(), "Xte": Xte.tolist(), "svms": svms,
+                                            "Ttr": T[:400].tolist(), "tytr": ty[:400].tolist(), "Tte": T[400:].tolist()}))
+    assert proc.returncode == 0, proc.stderr
+    out = json.loads(proc.stdout)
+    # SVM: same SMO solver as libsvm; decision values agree within the solver's stopping tolerance (1e-3)
+    for p, js in zip(svms, out["svm"]):
+        sk = SVC(**p).fit(Xtr, ytr).decision_function(Xte)
+        assert np.abs(np.array(js) - sk).max() < 3e-3, p
+        assert np.mean((np.array(js) > 0) == (sk > 0)) > 0.99, p
+    # trees: exact CART splits, identical to scikit-learn when no two splits tie
+    sk_tree = DecisionTreeClassifier(max_depth=4, min_samples_leaf=3, random_state=0).fit(T[:400], ty[:400])
+    np.testing.assert_allclose(out["tree"], sk_tree.predict_proba(T[400:])[:, 1], atol=1e-12)
+    # forests are random (bootstrap, features per split): compare their quality, not their exact output
+    js_auc = np.mean([roc_auc_score(yte, p) for p in out["rf"]])
+    sk_auc = np.mean([roc_auc_score(yte, RandomForestClassifier(n_estimators=100, random_state=s).fit(Xtr, ytr).predict_proba(Xte)[:, 1])
+                      for s in range(3)])
+    assert abs(js_auc - sk_auc) < 0.02

@@ -3,8 +3,8 @@
     uvicorn app.server:app --reload          # then open http://127.0.0.1:8000
 
 The same web app also works without this server (static hosting): it then runs a
-JavaScript port of the pipeline in the browser. Served from here, it uses the Python
-engine, which adds the SVM and random forest models.
+JavaScript port of the pipeline in the browser. Served from here, it uses this Python
+engine (scikit-learn).
 
 Security: uploaded files are parsed as CSV/ARFF text only. Unlike the first version of
 the project, the server never unpickles uploaded files (pickle can execute arbitrary code).
